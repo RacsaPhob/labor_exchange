@@ -1,0 +1,43 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = ""
+authors = [{name="GPNDS Team"}]
+readme = "README.md"
+requires-python = ">=3.13,<4.0"
+dependencies = [
+    "fastapi>=0.114.0,<1.0.0",
+    "uvicorn>=0.30.6,<1.0.0",
+    "pydantic-settings>=2.5.0,<3.0.0",
+    "dependency-injector>=4.41.0,<5.0.0",
+    "pydantic[email]>=2.11.7,<3.0.0",
+    "python-json-logger>=2.0.7,<3.0.0",
+    "passlib>=1.7.4,<2.0.0",
+    "python-multipart>=0.0.20,<1.0.0",
+    "python-jose>=3.5.0,<4.0.0",
+    "sqlalchemy[mypy]>=2.0.41,<3.0.0",
+    "bcrypt>=4.3.0,<5.0.0",
+    "sqlalchemy>=2.0.41",
+    "alembic>=1.13.0,<2.0.0",
+    "asyncpg>=0.29.0,<1.0.0",
+    "psycopg[binary]>=3.2.9",
+    "redis>=6.2.0,<7.0.0",
+    "httpx>=0.28.1,<1.0.0"
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.0.1,<5.0.0",
+    "pytest>=8.3.5,<9.0.0",
+    "pytest-asyncio>=0.26.0,<1.0.0",
+    "httpx>=0.28.1,<1.0.0",
+    "mypy>=1.16.1",
+    "types-python-jose>=3.5.0.20250531,<4.0.0.0",
+    "types-passlib>=1.7.7.20250602"
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+norecursedirs = [".venv", "__pycache__", "bases", "brokers", "storage", "tools", "config", "web", "services", "models", "repositories"]
+filterwarnings = ["ignore::pytest.PytestCollectionWarning"]
