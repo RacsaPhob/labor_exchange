@@ -9,21 +9,14 @@ from bases.base_alchemy_model import Base
 class User(Base):
     __tablename__ = "users"
 
-
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
-
-    username: Mapped[str]
-
+    username: Mapped[str] = mapped_column(nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255))
-
     is_company: Mapped[bool] = mapped_column(Boolean, default=False)
-
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()
     )
-
     jobs: Mapped[List["Job"]] = relationship(back_populates="user")
     responses: Mapped[List["Response"]] = relationship(back_populates="responses")

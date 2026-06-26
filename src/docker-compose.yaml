@@ -19,8 +19,6 @@ services:
     container_name: api.postgres
     ports:
       - "${POSTGRES_PORT}:5432"
-    # ЯВНО указываем Докеру, какие переменные брать для создания БД
-    # Слева — то, что ждет Докер, справа — то, как это называется у тебя в .env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -38,7 +36,6 @@ services:
       - "${APP_PORT}:8000"
     env_file:
       - ./.env
-    # Бэкенд запустится только ПОСЛЕ того, как стартуют БД и Редис
     depends_on:
       - api.postgres
       - api.redis
