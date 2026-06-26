@@ -1,34 +1,48 @@
-version: '3'
+version: '3.8' # Лучше использовать современную версию синтаксиса
+
 services:
   api.redis:
     image: valkey/valkey:latest
     hostname: api.redis
     container_name: api.redis
-    command: /bin/sh -c "redis-server --requirepass ${REDIS_PASSWORD}"
+    command: /bin/sh -c "redis-server --requirepass $${REDIS_PASSWORD}"
     ports:
-    - ${REDIS_PORT}:6379
+      - "${REDIS_PORT}:6379"
     volumes:
-    - redis_data:/data
+      - redis_data:/data
     env_file:
-    - ./.env
+      - ./.env
+
+  api.postgres:
+    image: postgres:16-alpine
+    hostname: api.postgres
+    container_name: api.postgres
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    # ЯВНО указываем Докеру, какие переменные брать для создания БД
+    # Слева — то, что ждет Докер, справа — то, как это называется у тебя в .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+
   api.backend:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-    - ${APP_PORT}:8000
+      - "${APP_PORT}:8000"
     env_file:
-    - ./.env
-  api.postgres:
-    image: postgres:latest
-    hostname: api.postgres
-    container_name: api.postgres
-    ports:
-    - ${POSTGRES_PORT}:5432
-    volumes:
-    - pgdata:/var/lib/postgresql/data
-    env_file:
-    - ./.env
+      - ./.env
+    # Бэкенд запустится только ПОСЛЕ того, как стартуют БД и Редис
+    depends_on:
+      - api.postgres
+      - api.redis
+
 volumes:
   redis_data:
   pgdata:
