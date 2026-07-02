@@ -30,44 +30,39 @@ class UserService(BaseService):
             if existing_user:
                 raise ValueError("Пользователь с таким email уже существует")
 
-            user_data = {
-                "email": user_in.email,
-                "username": user_in.username,
-                "hashed_password": self._hash_password(user_in.password),
-                "is_company": user_in.is_company
-            }
+            user_in.password = self._hash_password(user_in.password)
 
-            new_user_model = await uow.repository.create(user_data)
+            new_user_model = await uow.repository.create(user_in)
             await uow.commit()
 
-            return user_dto.UserResponse.model_validate(new_user_model)
+            return new_user_model
 
     async def get_user_by_id(self, user_id: int) -> user_dto.UserResponse:
         """Получение пользователя по ID"""
         async with self.uow as uow:
-            user_model = await uow.repository.retrieve(user_id)
-            if not user_model:
+            user = await uow.repository.retrieve(user_id)
+            if not user:
                 raise ValueError("Пользователь не найден")
 
-            return user_dto.UserResponse.model_validate(user_model)
+            return user
 
     async def get_user_by_email(self, email: str) -> user_dto.UserResponse:
         """Получение пользователя по email."""
         async with self.uow as uow:
-            user_model = await uow.repository.get_by_email(email)
-            if not user_model:
+            user = await uow.repository.get_by_email(email)
+            if not user:
                 raise ValueError("Пользователь с таким email не найден")
 
-            return user_dto.UserResponse.model_validate(user_model)
+            return user
 
     async def authenticate_user(self, email: str, password: str) -> user_dto.UserResponse | None:
         """Аутентификация пользователя. Возвращает DTO, если всё верно, иначе None."""
         async with self.uow as uow:
-            user_model = await uow.repository.get_by_email(email)
-            if not user_model:
+            user = await uow.repository.get_by_email(email)
+            if not user:
                 return None
 
-            if not self.verify_password(password, user_model.hashed_password):
+            if not self.verify_password(password, user.hashed_password):
                 return None
 
-            return user_dto.UserResponse.model_validate(user_model)
+            return user_dto.UserResponse.model_validate(user)

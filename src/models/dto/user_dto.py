@@ -17,4 +17,12 @@ class UserResponse(BaseDTO):
     username: str
     is_company: bool
     created_at: datetime
-    
+
+
+class UserResponseWithPassword(BaseDTO):
+    id: int
+    email: EmailStr
+    username: str
+    is_company: bool
+    created_at: datetime
+    hashed_password: str
