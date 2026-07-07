@@ -3,7 +3,6 @@ from bases.base_dto import BaseDTO
 
 class ResponseCreate(BaseDTO):
     job_id: int
-    user_id: int
     message: str
 
 

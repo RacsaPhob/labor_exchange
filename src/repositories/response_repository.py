@@ -50,6 +50,17 @@ class ResponseRepository(BaseAlchemyAsyncRepository[Response]):
         else:
             return None
 
+    async def retrieve_by_user_id_and_job_id(self, user_id: int, job_id: int) -> response_dto.Response | None:
+        """Получить отклик определенного пользователя на определенную вакансию"""
+        session = await self.connection_proxy.connect()
+        stmt = select(Response).where(Response.user_id == user_id, Response.job_id == job_id)
+        result = await session.execute(stmt)
+        response = result.scalar_one_or_none()
+        if response:
+            return _response_to_dto(response)
+        else:
+            return None
+
     async def list(self) -> Iterable[response_dto.Response]:
         """Получить все отклики"""
         stmt = select(Response)

@@ -19,4 +19,4 @@ class User(Base):
         server_default=func.now()
     )
     jobs: Mapped[List["Job"]] = relationship(back_populates="user")
-    responses: Mapped[List["Response"]] = relationship(back_populates="responses")
+    responses: Mapped[List["Response"]] = relationship(back_populates="user")

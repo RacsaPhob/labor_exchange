@@ -60,8 +60,25 @@ class UserRepository(BaseAlchemyAsyncRepository[User]):
         users = _scalars_to_dto_list(result.scalars().all())
         return users
 
-    async def get_by_email(self, email: str) -> user_dto.UserResponseWithPassword | None:
+    async def get_by_email(self, email: str) -> user_dto.UserResponse| None:
         """Поиск по email"""
+        stmt = select(User).where(User.email == email)
+        session = await self.connection_proxy.connect()
+        result = await session.execute(stmt)
+        user = result.scalar_one_or_none()
+        if user:
+            result = user_dto.UserResponse(
+                id=user.id,
+                email=user.email,
+                username=user.username,
+                is_company=user.is_company,
+                created_at=user.created_at,
+            )
+            return result
+        return None
+
+    async def get_by_email_with_password(self, email: str) -> user_dto.UserResponseWithPassword| None:
+        """Поиск по email. В DTO есть поле с хешем пароля"""
         stmt = select(User).where(User.email == email)
         session = await self.connection_proxy.connect()
         result = await session.execute(stmt)
