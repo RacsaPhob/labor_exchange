@@ -5,6 +5,8 @@ from bases.uows.response_uow import ResponseUOW
 from models.dto import response_dto
 
 from services.user_service import UserService
+from services.exceptions import (ObjectExistsException, ObjectDoesntExistsException,
+                                 NoPermissionException)
 
 
 class ResponseService(BaseService):
@@ -19,24 +21,24 @@ class ResponseService(BaseService):
 
         user = await self.user_service.get_user_by_id(user_id)
         async with self.uow as uow:
-            already_exists = await uow.repository.check_exists(user_id, response_in.job_id)
 
             if not user.is_company:
+                already_exists = await uow.repository.check_exists(user_id, response_in.job_id)
                 if already_exists:
-                    raise ValueError("Вы уже откликались на эту вакансию")
+                    raise ObjectExistsException("Вы уже откликались на эту вакансию")
 
                 response = await uow.repository.create(response_in, user_id)
                 await uow.commit()
 
                 return response
-            raise PermissionError("Откликаться на вакансии может только соискатель")
+            raise NoPermissionException("Откликаться на вакансии может только соискатель")
 
     async def get_response_by_id(self, response_id: int) -> response_dto.Response:
         """Получить отклик по id"""
         async with self.uow as uow:
             response = await uow.repository.retrieve(response_id)
             if not response:
-                raise ValueError("Вакансия не найдена")
+                raise ObjectDoesntExistsException("Вакансия не найдена")
 
             return response
 
@@ -45,7 +47,7 @@ class ResponseService(BaseService):
         async with self.uow as uow:
             response = await uow.repository.retrieve_by_user_id_and_job_id(user_id, job_id)
             if not response:
-                raise ValueError("Вакансия не найдена")
+                raise ObjectDoesntExistsException("Вакансия не найдена")
 
             return response
 
@@ -73,10 +75,10 @@ class ResponseService(BaseService):
 
             response = await uow.repository.retrieve(response_id)
             if not response:
-                raise ValueError("Отклик не найден")
+                raise ObjectDoesntExistsException("Отклик не найден")
 
             if response.user_id != current_user_id:
-                raise PermissionError("Вы не можете редактировать чужой отклик")
+                raise NoPermissionException("Вы не можете редактировать чужой отклик")
 
             updated_response = await uow.repository.update(response_id, response_in)
             await uow.commit()
@@ -89,10 +91,10 @@ class ResponseService(BaseService):
 
             response = await uow.repository.retrieve(response_id)
             if not response:
-                raise ValueError("Отклик не найден")
+                raise ObjectDoesntExistsException("Отклик не найден")
 
             if response.user_id != current_user_id:
-                raise PermissionError("Вы не можете удалить чужой отклик")
+                raise NoPermissionException("Вы не можете удалить чужой отклик")
 
             await uow.repository.delete(response_id)
             await uow.commit()
