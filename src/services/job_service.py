@@ -4,20 +4,26 @@ from bases.services.base_service import BaseService
 from bases.uows.job_uow import JobUOW
 from models.dto import job_dto
 
+from services.user_service import UserService
+
 
 class JobService(BaseService):
-    def __init__(self, uow: JobUOW) -> None:
+    def __init__(self, uow: JobUOW, user_service: UserService) -> None:
         self.uow = uow
+        self.user_service = user_service
 
     async def create_job(self, current_user_id: int, job_in: job_dto.JobCreate) -> job_dto.JobResponse:
+        user = await  self.user_service.get_user_by_id(current_user_id)
         """Создание новой вакансии"""
         async with self.uow as uow:
-            # привязываем вакансию к тому, кто делает запрос
-            job_in.user_id = current_user_id
-            new_job_dto = await uow.repository.create(job_in)
-            await uow.commit()
 
-            return new_job_dto
+            if user.is_company:
+                # привязываем вакансию к тому, кто делает запрос
+                new_job_dto = await uow.repository.create(job_in, current_user_id)
+                await uow.commit()
+                return new_job_dto
+
+            raise PermissionError("Соискатель не может создать вакансию")
 
     async def get_active_jobs(self) -> Iterable[job_dto.JobResponse]:
         """Получить список всех активных вакансий"""
@@ -62,3 +68,22 @@ class JobService(BaseService):
 
             await uow.repository.delete(job_id)
             await uow.commit()
+
+    async def get_active_user_jobs(self, user_id):
+        """Получить все активные вакансии работодателя"""
+        async with self.uow as uow:
+            jobs = await uow.repository.get_active_jobs_by_user_id(user_id)
+            return jobs
+
+    async def get_all_user_jobs(self, user_id):
+        """Получить все вакансии работодателя"""
+        async with self.uow as uow:
+            jobs = await uow.repository.get_jobs_by_user_id(user_id)
+            return jobs
+
+    async def get_all_jobs(self):
+        """Получить все вакансии"""
+        async with self.uow as uow:
+            jobs = await uow.repository.list()
+            return jobs
+

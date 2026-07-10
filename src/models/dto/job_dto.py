@@ -2,14 +2,22 @@ from typing import Optional
 from decimal import Decimal
 from datetime import datetime
 
-# Импортируем базовый DTO из твоего шаблона
 from bases.base_dto import BaseDTO
+from pydantic import model_validator
+
 
 class JobCreate(BaseDTO):
     title: str
     description: str
     salary_from: Optional[Decimal] = None
     salary_to: Optional[Decimal] = None
+
+    @model_validator(mode='after')
+    def check_salary_range(self) -> 'JobCreate':
+        if self.salary_from is not None and self.salary_to is not None:
+            if self.salary_from > self.salary_to:
+                raise ValueError('Поле salary_from не может быть больше salary_to')
+        return self
 
 
 class JobUpdate(BaseDTO):

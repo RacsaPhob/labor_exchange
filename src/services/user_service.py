@@ -1,4 +1,5 @@
 import bcrypt
+from typing import Iterable
 from bases.services.base_service import BaseService
 from bases.uows.user_uow import UserUOW
 from models.dto import user_dto
@@ -58,7 +59,7 @@ class UserService(BaseService):
     async def authenticate_user(self, email: str, password: str) -> user_dto.UserResponse | None:
         """Аутентификация пользователя. Возвращает DTO, если всё верно, иначе None."""
         async with self.uow as uow:
-            user = await uow.repository.get_by_email(email)
+            user = await uow.repository.get_by_email_with_password(email)
             if not user:
                 return None
 
@@ -66,3 +67,9 @@ class UserService(BaseService):
                 return None
 
             return user_dto.UserResponse.model_validate(user)
+
+    async def get_all_users(self) -> Iterable[user_dto.UserResponse]:
+        async with self.uow as uow:
+            users = await uow.repository.list()
+            return users
+

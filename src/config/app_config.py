@@ -1,5 +1,5 @@
 from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Config(BaseSettings):
@@ -30,6 +30,16 @@ class Config(BaseSettings):
 
     okd_stage: str = Field(
         description="Состояние OKD", default="DEV"
+    )
+
+    JWT_secret_key: str = Field(
+        description="secret key для генерации jwt токенов",
+        default="some-secret-key67"
+    )
+
+    JWT_algorithm: str = Field(
+        description="алгоритм для генерации jwt токенов",
+        default="HS256"
     )
 
 

@@ -106,7 +106,7 @@ class JobRepository(BaseAlchemyAsyncRepository[Job]):
 
     async def get_active_jobs_by_user_id(self, user_id: int) -> Iterable[job_dto.JobResponse]:
         """Получить все вакансии, созданные конкретным работодателем (только активные)."""
-        stmt = select(Job).where(Job.user_id == user_id, Job.is_active is True)
+        stmt = select(Job).where(Job.user_id == user_id, Job.is_active)
         session = await self.connection_proxy.connect()
         result = await session.execute(stmt)
         scalars = result.scalars().all()
