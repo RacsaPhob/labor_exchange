@@ -3,6 +3,7 @@ from typing import Iterable
 from bases.services.base_service import BaseService
 from bases.uows.user_uow import UserUOW
 from models.dto import user_dto
+from services.exceptions import ObjectExistsException, ObjectDoesntExistsException
 
 
 class UserService(BaseService):
@@ -29,7 +30,7 @@ class UserService(BaseService):
         async with self.uow as uow:
             existing_user = await uow.repository.get_by_email(user_in.email)
             if existing_user:
-                raise ValueError("Пользователь с таким email уже существует")
+                raise ObjectExistsException("Пользователь с таким email уже существует")
 
             user_in.password = self._hash_password(user_in.password)
 
@@ -43,7 +44,7 @@ class UserService(BaseService):
         async with self.uow as uow:
             user = await uow.repository.retrieve(user_id)
             if not user:
-                raise ValueError("Пользователь не найден")
+                raise ObjectDoesntExistsException("Пользователь не найден")
 
             return user
 
@@ -52,7 +53,7 @@ class UserService(BaseService):
         async with self.uow as uow:
             user = await uow.repository.get_by_email(email)
             if not user:
-                raise ValueError("Пользователь с таким email не найден")
+                raise ObjectDoesntExistsException("Пользователь с таким email не найден")
 
             return user
 

@@ -5,6 +5,7 @@ from bases.uows.job_uow import JobUOW
 from models.dto import job_dto
 
 from services.user_service import UserService
+from services.exceptions import (ObjectDoesntExistsException, NoPermissionException)
 
 
 class JobService(BaseService):
@@ -13,7 +14,7 @@ class JobService(BaseService):
         self.user_service = user_service
 
     async def create_job(self, current_user_id: int, job_in: job_dto.JobCreate) -> job_dto.JobResponse:
-        user = await  self.user_service.get_user_by_id(current_user_id)
+        user = await self.user_service.get_user_by_id(current_user_id)
         """Создание новой вакансии"""
         async with self.uow as uow:
 
@@ -23,7 +24,7 @@ class JobService(BaseService):
                 await uow.commit()
                 return new_job_dto
 
-            raise PermissionError("Соискатель не может создать вакансию")
+            raise NoPermissionException("Соискатель не может создать вакансию")
 
     async def get_active_jobs(self) -> Iterable[job_dto.JobResponse]:
         """Получить список всех активных вакансий"""
@@ -36,7 +37,7 @@ class JobService(BaseService):
         async with self.uow as uow:
             job = await uow.repository.retrieve(job_id)
             if not job:
-                raise ValueError("Вакансия не найдена")
+                raise ObjectDoesntExistsException("Вакансия не найдена")
 
             return job
 
@@ -46,10 +47,10 @@ class JobService(BaseService):
 
             job = await uow.repository.retrieve(job_id)
             if not job:
-                raise ValueError("Вакансия не найдена")
+                raise ObjectDoesntExistsException("Вакансия не найдена")
 
             if job.user_id != current_user_id:
-                raise PermissionError("Вы не можете редактировать чужую вакансию")
+                raise NoPermissionException("Вы не можете редактировать чужую вакансию")
 
             updated_job = await uow.repository.update(job_id, job_in)
             await uow.commit()
@@ -61,10 +62,10 @@ class JobService(BaseService):
         async with self.uow as uow:
             job = await uow.repository.retrieve(job_id)
             if not job:
-                raise ValueError("Вакансия не найдена")
+                raise ObjectDoesntExistsException("Вакансия не найдена")
 
             if job.user_id != current_user_id:
-                raise PermissionError("Вы не можете удалить чужую вакансию")
+                raise NoPermissionException("Вы не можете удалить чужую вакансию")
 
             await uow.repository.delete(job_id)
             await uow.commit()
