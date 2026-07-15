@@ -38,7 +38,7 @@ class ResponseService(BaseService):
         async with self.uow as uow:
             response = await uow.repository.retrieve(response_id)
             if not response:
-                raise ObjectDoesntExistsException("Вакансия не найдена")
+                raise ObjectDoesntExistsException("Отклик не найден")
 
             return response
 
@@ -47,7 +47,7 @@ class ResponseService(BaseService):
         async with self.uow as uow:
             response = await uow.repository.retrieve_by_user_id_and_job_id(user_id, job_id)
             if not response:
-                raise ObjectDoesntExistsException("Вакансия не найдена")
+                raise ObjectDoesntExistsException("Отклик не найдена")
 
             return response
 
