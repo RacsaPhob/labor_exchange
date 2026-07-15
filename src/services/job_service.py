@@ -70,19 +70,19 @@ class JobService(BaseService):
             await uow.repository.delete(job_id)
             await uow.commit()
 
-    async def get_active_user_jobs(self, user_id):
+    async def get_active_user_jobs(self, user_id: int) -> Iterable[job_dto.JobResponse]:
         """Получить все активные вакансии работодателя"""
         async with self.uow as uow:
             jobs = await uow.repository.get_active_jobs_by_user_id(user_id)
             return jobs
 
-    async def get_all_user_jobs(self, user_id):
+    async def get_all_user_jobs(self, user_id: int) -> Iterable[job_dto.JobResponse]:
         """Получить все вакансии работодателя"""
         async with self.uow as uow:
             jobs = await uow.repository.get_jobs_by_user_id(user_id)
             return jobs
 
-    async def get_all_jobs(self):
+    async def get_all_jobs(self) -> Iterable[job_dto.JobResponse]:
         """Получить все вакансии"""
         async with self.uow as uow:
             jobs = await uow.repository.list()
